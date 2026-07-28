@@ -31,6 +31,19 @@ It should print `Python 3.11.x` or `Python 3.10.x`, not `Python 3.14.x`.
 
 Native Windows note: install `training/requirements.txt` for data prep, training, and Keras evaluation. Install `training/requirements-tfjs.txt` only in Linux, WSL2, Colab, or Kaggle because `tensorflowjs` can pull Linux-oriented packages that fail on Windows.
 
+When moving the project into WSL, do not copy `.venv`, prepared data, model outputs, or caches. Use `rsync` with excludes:
+
+```bash
+rsync -av \
+  --exclude '.git/' \
+  --exclude '.venv/' \
+  --exclude '__pycache__/' \
+  --exclude 'training/data/' \
+  --exclude 'training/output/' \
+  /mnt/c/Users/LENOVO/Downloads/lady-sift/ \
+  ~/lady-sift/
+```
+
 For Kaggle downloads, configure `~/.kaggle/kaggle.json` or upload it in Colab before running `prepare_data.py`.
 
 ## 1. Prepare Data
