@@ -4,13 +4,32 @@ This folder trains a lightweight MobileNetV2 binary classifier for real vs AI-ge
 
 ## Environment
 
-Use Python 3.10 or 3.11 on a Colab/Kaggle free-tier GPU.
+Use Python 3.10 or 3.11 on a Colab/Kaggle free-tier GPU. Python 3.14 is not supported by the pinned TensorFlow build, so `pip install -r training/requirements.txt` will fail under Python 3.14.
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r training/requirements.txt
 ```
+
+On Windows, install Python 3.11 from python.org, then create the environment explicitly:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r training\requirements.txt
+```
+
+Verify the active interpreter before installing:
+
+```powershell
+python --version
+```
+
+It should print `Python 3.11.x` or `Python 3.10.x`, not `Python 3.14.x`.
+
+Native Windows note: install `training/requirements.txt` for data prep, training, and Keras evaluation. Install `training/requirements-tfjs.txt` only in Linux, WSL2, Colab, or Kaggle because `tensorflowjs` can pull Linux-oriented packages that fail on Windows.
 
 For Kaggle downloads, configure `~/.kaggle/kaggle.json` or upload it in Colab before running `prepare_data.py`.
 
@@ -102,7 +121,7 @@ Outputs:
 ## End-to-End Commands
 
 ```bash
-pip install -r training/requirements.txt
+pip install -r training/requirements-tfjs.txt
 python training/prepare_data.py
 python training/train_model.py
 python training/convert_to_tfjs.py

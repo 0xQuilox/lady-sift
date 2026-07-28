@@ -1,5 +1,6 @@
+# TensorFlow 2.15.x does not publish wheels for Python 3.14.
+# Use Python 3.10 or 3.11; Python 3.11 is recommended on Windows.
 tensorflow==2.15.1
-tensorflowjs==4.20.0
 numpy==1.26.4
 pillow==10.4.0
 scikit-learn==1.5.1

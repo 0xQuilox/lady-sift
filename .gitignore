@@ -1,0 +1,27 @@
+# Python environments
+.venv/
+venv/
+env/
+
+# Python cache/build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Local secrets
+.env
+.env.*
+kaggle.json
+
+# Training data and generated model artifacts
+training/data/
+training/output/
+*.h5
+*.keras
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

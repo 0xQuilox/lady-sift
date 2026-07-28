@@ -23,6 +23,28 @@ def parse_args():
     return parser.parse_args()
 
 
+def log_gpu_status():
+    gpus = tf.config.list_physical_devices("GPU")
+    if not gpus:
+        print("=" * 60)
+        print("WARNING: No GPU detected. Training will run on CPU.")
+        print("This will be significantly slower, potentially hours instead of minutes.")
+        print("On native Windows, TensorFlow GPU support usually requires WSL2.")
+        print("=" * 60)
+        return
+
+    for gpu in gpus:
+        try:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        except RuntimeError as error:
+            print(f"Could not set memory growth on {gpu}: {error}")
+
+    print("=" * 60)
+    print(f"GPU(s) detected: {[gpu.name for gpu in gpus]}")
+    print("Memory growth enabled to avoid TensorFlow over-allocating VRAM.")
+    print("=" * 60)
+
+
 def make_dataset(directory, image_size, batch_size, shuffle):
     dataset = tf.keras.utils.image_dataset_from_directory(
         directory,
@@ -123,6 +145,7 @@ def best_validation_accuracy(history):
 def main():
     args = parse_args()
     tf.keras.utils.set_random_seed(args.seed)
+    log_gpu_status()
 
     train_ds = make_dataset(args.data_dir / "train", args.image_size, args.batch_size, True)
     val_ds = make_dataset(args.data_dir / "val", args.image_size, args.batch_size, False)
