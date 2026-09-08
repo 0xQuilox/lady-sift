@@ -68,7 +68,10 @@ def build_model(image_size):
         ],
         name="augmentation",
     )(inputs)
-    preprocessed = tf.keras.applications.mobilenet_v2.preprocess_input(augmented)
+    # Use Rescaling instead of mobilenet_v2.preprocess_input to avoid TrueDivide
+    # serialization issue on Keras 3 / TF 2.19+ (preprocess_input creates Lambda with TrueDivide)
+    # Equivalent to (x / 127.5) - 1 -> scale 1/127.5, offset -1
+    preprocessed = tf.keras.layers.Rescaling(scale=1.0 / 127.5, offset=-1)(augmented)
     base_model = tf.keras.applications.MobileNetV2(
         input_shape=(image_size, image_size, 3),
         include_top=False,
