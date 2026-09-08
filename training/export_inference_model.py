@@ -36,8 +36,17 @@ def main():
     inference_model = build_inference_model()
     inference_model.summary()
 
-    print("Copying weights by name (skip_mismatch=True)...")
-    inference_model.load_weights(str(src), by_name=True, skip_mismatch=True)
+    print("Copying weights by layer (direct set_weights)...")
+    # Copy weights layer-by-layer by name to avoid shape mismatch from by_name bulk load
+    for layer in inference_model.layers:
+        try:
+            src_layer = trained.get_layer(layer.name)
+            w = src_layer.get_weights()
+            if w:
+                layer.set_weights(w)
+                print(f"  copied {layer.name}: {len(w)} weight arrays")
+        except Exception as e:
+            print(f"  skip {layer.name}: {e}")
 
     # Verify predictions match on a dummy input
     print("Verifying predictions match...")
