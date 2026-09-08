@@ -34,9 +34,26 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
   if (msg.type === "LADY_SIFT_CLASSIFY") {
-    const id = msg.id;
-    pending.set(id, (res) => sendResponse(res));
-    sendToSandbox(msg);
+    (async () => {
+      try {
+        const res = await fetch(msg.url);
+        if (!res.ok) throw new Error(`fetch ${res.status} ${res.statusText}`);
+        const blob = await res.blob();
+        const bitmap = await createImageBitmap(blob);
+        const id = msg.id;
+        pending.set(id, (res) => sendResponse(res));
+        // Transfer bitmap to sandbox
+        try {
+          sandboxEl.contentWindow.postMessage({ type: "LADY_SIFT_CLASSIFY_BITMAP", id, bitmap, threshold: msg.threshold, url: msg.url }, "*", [bitmap]);
+        } catch {
+          // Fallback if transfer fails (e.g. bitmap already closed)
+          sandboxEl.contentWindow.postMessage({ type: "LADY_SIFT_CLASSIFY_BITMAP", id, bitmap, threshold: msg.threshold, url: msg.url }, "*");
+        }
+      } catch (e) {
+        console.warn("[LadySift][offscreen] fetch failed", msg.url, e);
+        sendResponse({ id: msg.id, url: msg.url, error: String(e) + (e.stack ? " " + e.stack.slice(0,500) : "") });
+      }
+    })();
     return true;
   }
 });

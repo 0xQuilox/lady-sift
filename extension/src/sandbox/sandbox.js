@@ -38,7 +38,21 @@ async function classifyImageBitmap(bitmap) {
 
 window.addEventListener("message", async (event) => {
   const msg = event.data;
+  if (msg.type === "LADY_SIFT_CLASSIFY_BITMAP") {
+    try {
+      const bitmap = msg.bitmap;
+      if (!bitmap) throw new Error("no bitmap");
+      const fakeProb = await classifyImageBitmap(bitmap);
+      bitmap.close?.();
+      const label = fakeProb >= (msg.threshold ?? 0.5) ? "fake" : "real";
+      window.parent.postMessage({ type: "LADY_SIFT_RESULT", id: msg.id, url: msg.url, fakeProb, label }, "*");
+    } catch (e) {
+      console.error("[LadySift][sandbox] classify error", e, e.stack);
+      window.parent.postMessage({ type: "LADY_SIFT_RESULT", id: msg.id, url: msg.url, error: (e.message || String(e)) + " | stack: " + (e.stack || "").slice(0,1200) }, "*");
+    }
+  }
   if (msg.type === "LADY_SIFT_CLASSIFY") {
+    // Fallback old path (direct fetch in sandbox) - keep for compatibility
     try {
       const res = await fetch(msg.url);
       if (!res.ok) throw new Error(`fetch ${res.status}`);
@@ -49,12 +63,16 @@ window.addEventListener("message", async (event) => {
       const label = fakeProb >= (msg.threshold ?? 0.5) ? "fake" : "real";
       window.parent.postMessage({ type: "LADY_SIFT_RESULT", id: msg.id, url: msg.url, fakeProb, label }, "*");
     } catch (e) {
-      window.parent.postMessage({ type: "LADY_SIFT_RESULT", id: msg.id, url: msg.url, error: String(e) }, "*");
+      window.parent.postMessage({ type: "LADY_SIFT_RESULT", id: msg.id, url: msg.url, error: String(e) + (e.stack ? " " + e.stack.slice(0,800) : "") }, "*");
     }
   }
   if (msg.type === "LADY_SIFT_PING") {
-    await ensureModel();
-    window.parent.postMessage({ type: "LADY_SIFT_PONG", ready: true, backend: tf.getBackend() }, "*");
+    try {
+      await ensureModel();
+      window.parent.postMessage({ type: "LADY_SIFT_PONG", ready: true, backend: tf.getBackend() }, "*");
+    } catch (e) {
+      window.parent.postMessage({ type: "LADY_SIFT_PONG", ready: false, error: String(e) }, "*");
+    }
   }
 });
 
