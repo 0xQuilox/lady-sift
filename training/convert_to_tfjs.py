@@ -1,4 +1,5 @@
 import argparse
+import json
 import shutil
 import subprocess
 import sys
@@ -44,6 +45,30 @@ def main():
         str(args.output_dir),
     ]
     subprocess.run(command, check=True)
+
+    # Patch Keras 3 InputLayer serialization for TF.js 4.x (batch_shape/optional -> batchInputShape)
+    model_json = args.output_dir / "model.json"
+    if model_json.exists():
+        with model_json.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        def patch(obj):
+            if isinstance(obj, dict):
+                if obj.get("class_name") == "InputLayer" and "config" in obj:
+                    cfg = obj["config"]
+                    if "batch_shape" in cfg:
+                        cfg["batchInputShape"] = cfg.pop("batch_shape")
+                    cfg.pop("optional", None)
+                for v in obj.values():
+                    patch(v)
+            elif isinstance(obj, list):
+                for x in obj:
+                    patch(x)
+
+        patch(data)
+        with model_json.open("w", encoding="utf-8") as f:
+            json.dump(data, f)
+        print("Patched model.json InputLayer for TF.js compatibility")
 
     size_bytes = directory_size(args.output_dir)
     print(f"TF.js model written to {args.output_dir}")

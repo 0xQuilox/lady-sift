@@ -1,0 +1,12 @@
+* { box-sizing: border-box; }
+body { width: 320px; margin: 0; padding: 16px; font: 13px/1.4 system-ui, sans-serif; }
+h1 { margin: 0 0 2px; font-size: 18px; }
+.sub { margin: 0 0 12px; color: #666; }
+.row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+.row input[type="range"] { flex: 1; }
+.status { padding: 8px; border-radius: 8px; background: #eee; margin: 12px 0; }
+.status.ok { background: #d5f5e3; }
+.status.warn { background: #fdebd0; }
+.privacy { color: #888; font-size: 11px; }
+pre { background: #f6f6f6; padding: 8px; border-radius: 8px; overflow: auto; max-height: 180px; font-size: 11px; }
+details summary { cursor: pointer; }

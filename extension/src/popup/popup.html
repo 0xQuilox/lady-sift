@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <h1>Lady Sift</h1>
+    <p class="sub">On-device real vs AI image detector</p>
+
+    <label class="row">
+      <input id="enabled" type="checkbox" /> Enabled
+    </label>
+
+    <label class="row">
+      Threshold (fake ≥)
+      <input id="threshold" type="range" min="0.3" max="0.8" step="0.05" />
+      <span id="thresholdVal">0.50</span>
+    </label>
+
+    <div id="status" class="status">Loading model…</div>
+
+    <p class="privacy">100% local - no image leaves your device.</p>
+
+    <details>
+      <summary>Test accuracy</summary>
+      <pre id="metrics">loading…</pre>
+    </details>
+
+    <script src="./popup.js"></script>
+  </body>
+</html>
