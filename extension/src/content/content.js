@@ -109,7 +109,7 @@
     });
   }
 
-  function wrapAndBadge(img, { label, fakeProb }) {
+  function wrapAndBadge(img, { label }) {
     if (img.closest(`.${BADGE_CLASS}`)) return;
     const wrapper = document.createElement("span");
     wrapper.className = "lady-sift-wrapper";
@@ -117,20 +117,23 @@
     if (!parent) return;
     // Avoid double-wrapping
     if (parent.classList.contains("lady-sift-wrapper")) {
-      addBadge(parent, label, fakeProb);
+      addBadge(parent, label);
       return;
     }
     img.before(wrapper);
     wrapper.appendChild(img);
-    addBadge(wrapper, label, fakeProb);
+    addBadge(wrapper, label);
   }
 
-  function addBadge(wrapper, label, fakeProb) {
+  function addBadge(wrapper, label) {
     wrapper.querySelectorAll(`.${BADGE_CLASS}`).forEach((b) => b.remove());
     const badge = document.createElement("span");
     badge.className = BADGE_CLASS;
     badge.dataset.label = label;
-    badge.textContent = `${label} ${(fakeProb * 100).toFixed(0)}%`;
+    // User-facing: AI Generated vs Real (no percent)
+    const text = label === "fake" ? "AI Generated" : "Real";
+    badge.textContent = text;
+    badge.title = label === "fake" ? "AI-generated image" : "Real image";
     wrapper.appendChild(badge);
     wrapper.style.position = "relative";
   }
