@@ -66,6 +66,23 @@ def main():
                     patch(x)
 
         patch(data)
+        # Strip augmentation Sequential (RandomFlip/Rotation/Zoom not supported in TF.js)
+        try:
+            layers = data["modelTopology"]["model_config"]["config"]["layers"]
+            new_layers = [l for l in layers if l.get("name") != "augmentation"]
+            if len(new_layers) != len(layers):
+                for l in new_layers:
+                    if l.get("name") == "rescaling":
+                        for node in l.get("inbound_nodes", []):
+                            for arg in node.get("args", []):
+                                hist = arg.get("config", {}).get("keras_history")
+                                if hist and hist[0] == "augmentation":
+                                    hist[0] = "input_layer"
+                data["modelTopology"]["model_config"]["config"]["layers"] = new_layers
+                print("Stripped augmentation layer for TF.js (RandomFlip/Rotation/Zoom)")
+        except Exception as e:
+            print(f"Warning: failed to strip augmentation: {e}")
+
         with model_json.open("w", encoding="utf-8") as f:
             json.dump(data, f)
         print("Patched model.json InputLayer for TF.js compatibility")
