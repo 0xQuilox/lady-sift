@@ -26,14 +26,16 @@ def main():
         model = tf.keras.models.load_model(src)
 
     out = Path("training/output/saved_model")
-    out.mkdir(parents=True, exist_ok=True)
     # Remove old saved_model contents if exists
     import shutil
-    if (out / "saved_model.pb").exists() or (out / "variables").exists():
+    if out.exists():
         shutil.rmtree(out)
-        out.mkdir(parents=True, exist_ok=True)
 
-    model.save(str(out), save_format="tf")
+    # Keras 3: use model.export for SavedModel
+    try:
+        model.export(str(out))
+    except AttributeError:
+        tf.saved_model.save(model, str(out))
     print(f"Saved SavedModel to {out}")
     # Verify
     loaded = tf.saved_model.load(str(out))
