@@ -1,6 +1,7 @@
 import argparse
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -31,8 +32,11 @@ def main():
         shutil.rmtree(args.output_dir)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Use current interpreter to avoid PATH mismatch (e.g. global 3.13 vs py311 venv, Colab vs Kaggle)
     command = [
-        "tensorflowjs_converter",
+        sys.executable,
+        "-m",
+        "tensorflowjs.converters.converter",
         "--input_format=keras",
         "--output_format=tfjs_layers_model",
         f"--quantization_bytes={args.quantization_bytes}",

@@ -1,8 +1,9 @@
-# TensorFlow 2.15.x does not publish wheels for Python 3.14.
-# Use Python 3.10 or 3.11; Python 3.11 is recommended on Windows.
-tensorflow==2.15.1
-numpy==1.26.4
-pillow==10.4.0
-scikit-learn==1.5.1
-tqdm==4.66.5
-kaggle==1.6.17
+# Supports Python 3.10-3.13 / TF 2.15-2.21
+# - Colab/Kaggle now on 3.12/3.13: use TF 2.19+ (2.15 has no wheels for 3.14 and CUDA 12 incompat on Colab T4)
+# - For reproducible paper runs pin to 2.15.1 on Python 3.11, otherwise install latest 2.19-2.21
+tensorflow>=2.15.1,<2.22
+numpy>=1.26.4
+pillow>=10.4.0
+scikit-learn>=1.5.1
+tqdm>=4.66.5
+kaggle>=1.6.17

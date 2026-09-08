@@ -2,6 +2,7 @@ import argparse
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -51,7 +52,9 @@ def load_model(args):
         keras_path = temporary_dir / "roundtrip.h5"
         subprocess.run(
             [
-                "tensorflowjs_converter",
+                sys.executable,
+                "-m",
+                "tensorflowjs.converters.converter",
                 "--input_format=tfjs_layers_model",
                 "--output_format=keras",
                 str(args.tfjs_model_dir / "model.json"),
