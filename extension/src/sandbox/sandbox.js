@@ -1,6 +1,6 @@
-// Sandboxed TF.js - allowed unsafe-eval
+// Sandboxed TF.js - allowed unsafe-eval, now GraphModel (SavedModel) - no Keras deserialization
 let model = null;
-const MODEL_URL = "../../models/tfjs_model/model.json";
+const MODEL_URL = "../../models/tfjs_model/model.json"; // GraphModel
 const IMAGE_SIZE = 224;
 
 async function ensureModel() {
@@ -8,8 +8,9 @@ async function ensureModel() {
   await tf.ready();
   try { await tf.setBackend("webgl"); } catch {}
   await tf.ready();
-  model = await tf.loadLayersModel(MODEL_URL);
-  console.log("[LadySift][sandbox] model loaded", model.inputs[0].shape, "backend", tf.getBackend());
+  // GraphModel: frozen op graph, no fromConfig/deserializeKerasObject
+  model = await tf.loadGraphModel(MODEL_URL);
+  console.log("[LadySift][sandbox] GraphModel loaded, backend", tf.getBackend(), "inputs", model.inputs.map(i=>i.shape), "outputs", model.outputs.map(o=>o.shape));
   return model;
 }
 
@@ -30,9 +31,12 @@ async function classifyImageBitmap(bitmap) {
   ctx.drawImage(bitmap, 0, 0);
   const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
   const input = preprocessImageData(imageData);
+  // GraphModel: predict returns Tensor or Tensor[]
   const pred = m.predict(input);
-  const prob = (await pred.data())[0];
-  tf.dispose([input, pred]);
+  const out = Array.isArray(pred) ? pred[0] : pred;
+  const prob = (await out.data())[0];
+  tf.dispose([input, out]);
+  if (Array.isArray(pred)) pred.forEach(t=>t.dispose?.());
   return prob;
 }
 
